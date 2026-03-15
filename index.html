@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 Office Oscars Pool</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #12121f;
+      color: #e0e0e0;
+      font-family: Georgia, 'Times New Roman', serif;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #2a1500 0%, #5c3a00 50%, #2a1500 100%);
+      border-bottom: 3px solid #c9a227;
+      padding: 28px 20px 22px;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 2.2em;
+      color: #c9a227;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-shadow: 0 0 30px rgba(201,162,39,0.5);
+    }
+    header p { color: #a0a0a0; margin-top: 6px; font-size: 0.9em; letter-spacing: 1px; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      background: #0a0a14;
+      border-bottom: 1px solid #2a2a3e;
+      padding: 7px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78em;
+      color: #777;
+      font-family: Arial, sans-serif;
+    }
+    .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #4caf50;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+    /* ── Nav ── */
+    nav {
+      background: #0d0d1a;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      padding: 14px 20px;
+      border-bottom: 1px solid #2a2a3e;
+    }
+    nav button {
+      background: transparent;
+      border: 1px solid #3a3a5a;
+      color: #999;
+      padding: 9px 28px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      font-size: 0.85em;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+    nav button:hover { border-color: #c9a227; color: #c9a227; }
+    nav button.active {
+      background: #c9a227;
+      border-color: #c9a227;
+      color: #12121f;
+      font-weight: bold;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 860px; margin: 0 auto; padding: 30px 20px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .section-title {
+      font-size: 1.15em;
+      color: #c9a227;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #3a2800;
+    }
+
+    /* ── Leaderboard ── */
+    .lb-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .lb-table th {
+      background: #1e1200;
+      color: #c9a227;
+      padding: 11px 16px;
+      text-align: left;
+      letter-spacing: 1px;
+      font-size: 0.78em;
+      text-transform: uppercase;
+      font-family: Arial, sans-serif;
+      border-bottom: 2px solid #c9a227;
+    }
+    .lb-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid #1e1e30;
+      font-family: Arial, sans-serif;
+    }
+    .lb-table tr:hover td { background: rgba(201,162,39,0.04); }
+    .lb-table tr.top-row td { background: rgba(201,162,39,0.06); }
+
+    .rank-cell { width: 54px; text-align: center; font-size: 1.25em; }
+    .gold   { color: #ffd700; }
+    .silver { color: #c0c0c0; }
+    .bronze { color: #cd7f32; }
+    .rank-num { color: #555; font-size: 0.95em; }
+
+    .name-cell { font-size: 1.05em; }
+    .score-cell {
+      font-size: 1.35em;
+      font-weight: bold;
+      color: #c9a227;
+      text-align: center;
+      width: 80px;
+    }
+    .tb-cell {
+      color: #666;
+      font-size: 0.88em;
+      text-align: center;
+      width: 100px;
+    }
+    .lb-note {
+      margin-top: 14px;
+      font-size: 0.78em;
+      color: #555;
+      font-family: Arial, sans-serif;
+      text-align: right;
+    }
+
+    /* ── Categories ── */
+    .progress-bar-outer {
+      background: #1e1e30;
+      border-radius: 4px;
+      height: 6px;
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+    .progress-bar-inner {
+      height: 100%;
+      background: linear-gradient(90deg, #c9a227, #f0d060);
+      border-radius: 4px;
+      transition: width 0.5s;
+    }
+    .progress-label {
+      font-size: 0.82em;
+      color: #888;
+      font-family: Arial, sans-serif;
+      margin-bottom: 6px;
+    }
+    .cat-grid { display: grid; gap: 10px; }
+    .cat-card {
+      background: #16162a;
+      border: 1px solid #2a2a42;
+      border-radius: 7px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .cat-card.announced {
+      border-color: rgba(201,162,39,0.4);
+      background: #191526;
+    }
+    .cat-label {
+      font-size: 0.72em;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: Arial, sans-serif;
+      margin-bottom: 4px;
+    }
+    .cat-winner { font-size: 0.97em; }
+    .cat-pending { font-size: 0.97em; color: #444; font-style: italic; }
+    .badge-winner {
+      background: #c9a227;
+      color: #12121f;
+      padding: 4px 13px;
+      border-radius: 20px;
+      font-size: 0.7em;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      font-family: Arial, sans-serif;
+      flex-shrink: 0;
+    }
+    .badge-pending {
+      background: #1e1e30;
+      color: #444;
+      padding: 4px 13px;
+      border-radius: 20px;
+      font-size: 0.7em;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      font-family: Arial, sans-serif;
+      flex-shrink: 0;
+    }
+
+    /* ── Analytics ── */
+    .analytics-grid { display: grid; gap: 14px; }
+    .an-card {
+      background: #16162a;
+      border: 1px solid #2a2a42;
+      border-radius: 7px;
+      padding: 16px;
+    }
+    .an-cat {
+      font-size: 0.72em;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: Arial, sans-serif;
+      margin-bottom: 12px;
+    }
+    .an-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .an-name {
+      font-size: 0.88em;
+      font-family: Arial, sans-serif;
+      flex: 1;
+      min-width: 0;
+    }
+    .an-name-primary { color: #d0d0d0; }
+    .an-name-secondary { color: #666; }
+    .an-bar-wrap {
+      width: 120px;
+      flex-shrink: 0;
+    }
+    .an-bar-bg {
+      background: #2a2a40;
+      border-radius: 3px;
+      height: 7px;
+      overflow: hidden;
+    }
+    .an-bar-fill { height: 100%; border-radius: 3px; }
+    .an-bar-primary { background: linear-gradient(90deg, #c9a227, #f0d060); }
+    .an-bar-secondary { background: linear-gradient(90deg, #3a3a60, #5a5a80); }
+    .an-votes {
+      font-size: 0.78em;
+      color: #777;
+      white-space: nowrap;
+      font-family: Arial, sans-serif;
+      width: 70px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .an-votes-secondary { color: #555; }
+
+    /* ── Misc ── */
+    .msg { text-align: center; padding: 40px; color: #666; font-family: Arial, sans-serif; }
+    .msg-error { color: #e57373; }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.5em; letter-spacing: 2px; }
+      nav button { padding: 8px 14px; font-size: 0.8em; }
+      .cat-card { flex-wrap: wrap; }
+      .an-bar-wrap { width: 80px; }
+      .an-votes { width: 55px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⭐ 2026 Office Oscars Pool ⭐</h1>
+  <p>Live Leaderboard &amp; Results</p>
+</header>
+
+<div class="status-bar">
+  <span><span class="dot"></span>Live — refreshes every 60 seconds</span>
+  <span id="last-updated">Loading…</span>
+</div>
+
+<nav>
+  <button class="active" onclick="showTab(this,'leaderboard')">🏆 Leaderboard</button>
+  <button onclick="showTab(this,'categories')">🎬 Category Results</button>
+  <button onclick="showTab(this,'analytics')">📊 Analytics</button>
+</nav>
+
+<div class="container">
+  <div id="tab-leaderboard" class="tab-panel active">
+    <div class="section-title">Standings</div>
+    <div id="leaderboard-content"><div class="msg">Loading standings…</div></div>
+  </div>
+
+  <div id="tab-categories" class="tab-panel">
+    <div class="section-title">Category Results</div>
+    <div id="categories-content"><div class="msg">Loading categories…</div></div>
+  </div>
+
+  <div id="tab-analytics" class="tab-panel">
+    <div class="section-title">Pool Analytics</div>
+    <p style="font-family:Arial,sans-serif;font-size:0.88em;color:#888;margin-bottom:20px;">Top votes received for each category &mdash; <em>aka, The Wisdom of the Crowd</em></p>
+    <div id="analytics-content"><div class="msg">Loading analytics…</div></div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID = '1BFo9uV0KB1Evnagxdu7-9I47jljq97rjJJdbQL5d-0g';
+const GIDS = {
+  leaderboard: '77902259',
+  masterkey:   '527997303',
+  analytics:   '468543912'
+};
+const POOL_SIZE = 19;
+
+// ── Google Visualization API (works from file:// and any hosted origin) ──────
+// Uses script-tag injection (JSONP) so no CORS issues.
+
+function fetchGviz(gid) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_gviz_' + Date.now() + '_' + Math.floor(Math.random() * 9999);
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq`
+              + `?tqx=responseHandler:${cbName}&gid=${gid}`;
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Timeout loading sheet data'));
+    }, 12000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[cbName] = function(data) {
+      cleanup();
+      if (!data || data.status !== 'ok') {
+        reject(new Error('Sheet API returned: ' + (data && data.status)));
+        return;
+      }
+      const table  = data.table;
+      const headers = (table.cols || []).map(c => (c.label || c.id || '').trim());
+      const rows = (table.rows || [])
+        .filter(row => row && row.c)
+        .map(row => {
+          const obj = {};
+          headers.forEach((h, i) => {
+            const cell = row.c[i];
+            obj[h] = (cell && cell.v !== null && cell.v !== undefined)
+                     ? String(cell.v) : '';
+          });
+          return obj;
+        })
+        .filter(obj => Object.values(obj).some(v => v !== ''));
+      resolve(rows);
+    };
+
+    const script = document.createElement('script');
+    script.src = url;
+    script.onerror = () => { cleanup(); reject(new Error('Failed to load sheet')); };
+    document.head.appendChild(script);
+  });
+}
+
+function isEmpty(val) {
+  return !val || val.toLowerCase() === 'nan';
+}
+
+// ── Render: Leaderboard ──────────────────────────────────────────────────────
+
+function renderLeaderboard(rows) {
+  if (!rows.length) return '<div class="msg msg-error">No data found.</div>';
+
+  const sorted = [...rows].sort((a, b) => {
+    const sd = (parseFloat(b.Score) || 0) - (parseFloat(a.Score) || 0);
+    if (sd !== 0) return sd;
+    return (a.Participant || '').localeCompare(b.Participant || '');
+  });
+
+  const rankIcon = r => {
+    if (r === 1) return '<span class="gold">🥇</span>';
+    if (r === 2) return '<span class="silver">🥈</span>';
+    if (r === 3) return '<span class="bronze">🥉</span>';
+    return `<span class="rank-num">${r}</span>`;
+  };
+
+  let html = `<table class="lb-table">
+    <thead><tr>
+      <th>Rank</th>
+      <th>Participant</th>
+      <th style="text-align:center">Score</th>
+      <th style="text-align:center">Tiebreaker Guess</th>
+    </tr></thead><tbody>`;
+
+  let rank = 1;
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0) {
+      const prev = parseFloat(sorted[i-1].Score) || 0;
+      const curr = parseFloat(sorted[i].Score)   || 0;
+      if (curr < prev) rank = i + 1;
+    }
+    const r = sorted[i];
+    const topClass = rank <= 3 ? 'top-row' : '';
+    html += `<tr class="${topClass}">
+      <td class="rank-cell">${rankIcon(rank)}</td>
+      <td class="name-cell">${r.Participant || '—'}</td>
+      <td class="score-cell">${r.Score !== '' ? r.Score : '0'}</td>
+      <td class="tb-cell">${r.Tiebreaker || '—'}</td>
+    </tr>`;
+  }
+
+  html += `</tbody></table>
+    <p class="lb-note">Tiebreaker: guess for total Oscars won by Best Picture winner</p>`;
+  return html;
+}
+
+// ── Render: Categories ───────────────────────────────────────────────────────
+
+function renderCategories(rows) {
+  if (!rows.length) return '<div class="msg msg-error">No data found.</div>';
+
+  const validRows = rows.filter(r => r['Category Name'] && r['Category Name'].toLowerCase() !== 'nan');
+  const announced = validRows.filter(r => r['Official Winner'] && r['Official Winner'].toLowerCase() !== 'nan' && r['Official Winner'].trim() !== '').length;
+  const total = validRows.length;
+  const pct = total ? Math.round((announced / total) * 100) : 0;
+
+  let html = `
+    <p class="progress-label">${announced} of ${total} categories announced (${pct}%)</p>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" style="width:${pct}%"></div>
+    </div>
+    <div class="cat-grid">`;
+
+  for (const r of validRows) {
+    const cat    = r['Category Name'];
+    const winner = r['Official Winner'];
+    const hasW   = winner && winner.toLowerCase() !== 'nan' && winner.trim() !== '';
+    html += `<div class="cat-card ${hasW ? 'announced' : ''}">
+      <div>
+        <div class="cat-label">${cat}</div>
+        ${hasW
+          ? `<div class="cat-winner">${winner}</div>`
+          : `<div class="cat-pending">To be announced</div>`}
+      </div>
+      ${hasW
+        ? `<span class="badge-winner">✓ Winner</span>`
+        : `<span class="badge-pending">Pending</span>`}
+    </div>`;
+  }
+
+  html += '</div>';
+  return html;
+}
+
+// ── Render: Analytics ────────────────────────────────────────────────────────
+
+function renderAnalytics(rows) {
+  if (!rows.length) return '<div class="msg msg-error">No data found.</div>';
+
+  let html = '<div class="analytics-grid">';
+
+  for (const r of rows) {
+    const cat   = r['Category'];
+    const fav   = r['Crowd Favorite'];
+    const votes = parseInt(r['Votes']) || 0;
+    const pct   = parseFloat(r['% of Pool']) || 0;
+    const ru    = r['Runner-Up Favorite'];
+    const ruV   = parseInt(r['Runner-Up Votes']) || 0;
+
+    if (!cat || isEmpty(cat) || !fav || isEmpty(fav)) continue;
+
+    const ruPct = POOL_SIZE ? ruV / POOL_SIZE : 0;
+
+    html += `<div class="an-card">
+      <div class="an-cat">${cat}</div>
+      <div class="an-row">
+        <div class="an-name an-name-primary">${fav}</div>
+        <div class="an-bar-wrap">
+          <div class="an-bar-bg">
+            <div class="an-bar-fill an-bar-primary" style="width:${Math.round(pct*100)}%"></div>
+          </div>
+        </div>
+        <div class="an-votes">${votes} vote${votes!==1?'s':''} &nbsp;${Math.round(pct*100)}%</div>
+      </div>`;
+
+    if (ru && !isEmpty(ru)) {
+      html += `<div class="an-row">
+        <div class="an-name an-name-secondary">2nd: ${ru}</div>
+        <div class="an-bar-wrap">
+          <div class="an-bar-bg">
+            <div class="an-bar-fill an-bar-secondary" style="width:${Math.round(ruPct*100)}%"></div>
+          </div>
+        </div>
+        <div class="an-votes an-votes-secondary">${ruV} vote${ruV!==1?'s':''} &nbsp;${Math.round(ruPct*100)}%</div>
+      </div>`;
+    }
+
+    html += '</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+// ── Tab switching ────────────────────────────────────────────────────────────
+
+function showTab(btn, name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Data refresh ─────────────────────────────────────────────────────────────
+
+async function refresh() {
+  try {
+    const [lbRows, catRows, anRows] = await Promise.all([
+      fetchGviz(GIDS.leaderboard),
+      fetchGviz(GIDS.masterkey),
+      fetchGviz(GIDS.analytics)
+    ]);
+
+    document.getElementById('leaderboard-content').innerHTML = renderLeaderboard(lbRows);
+    document.getElementById('categories-content').innerHTML  = renderCategories(catRows);
+    document.getElementById('analytics-content').innerHTML   = renderAnalytics(anRows);
+
+    const now = new Date();
+    document.getElementById('last-updated').textContent =
+      'Last updated: ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  } catch (e) {
+    console.error('Refresh error:', e);
+    document.getElementById('last-updated').textContent = '⚠ Update failed — retrying…';
+  }
+}
+
+refresh();
+setInterval(refresh, 60000);
+</script>
+</body>
+</html>
